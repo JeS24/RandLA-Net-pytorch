@@ -243,7 +243,7 @@ def validation(device, model, test_loader, n_layers, n_classes, scheduler):
             val_total_seen += len(labels)
 
             conf_matrix = confusion_matrix(labels, pred,
-                                           np.arange(0, n_classes, 1))
+                                        labels=np.arange(0, n_classes, 1))
             gt_classes += np.sum(conf_matrix, axis=1)
             positive_classes += np.sum(conf_matrix, axis=0)
             true_positive_classes += np.diagonal(conf_matrix)

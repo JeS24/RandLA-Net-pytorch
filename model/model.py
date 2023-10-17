@@ -134,12 +134,12 @@ class AttentivePooling(nn.Module):
                                stride=[1, 1])
         self.bn1 = nn.BatchNorm2d(d_out, eps=1e-6, momentum=0.01)
 
-    def forward(self, x):
+    def forward(self, x): ## x <- (bs, d, N, k)
         batch_size = x.shape[0]
         num_points = x.shape[2]
         num_neigh = x.shape[3]
-        x = x.permute(0, 2, 3, 1).contiguous()
-        x = torch.reshape(x, [-1, num_neigh, self.n_feature])
+        x = x.permute(0, 2, 3, 1).contiguous()  ## to (bs, N, k, d)
+        x = torch.reshape(x, [-1, num_neigh, self.n_feature])  ## (bs * N, k, d)
         att_activation = self.fc1(x)
         att_score = F.softmax(att_activation, dim=1)
         x = x * att_score
@@ -152,7 +152,7 @@ class AttentivePooling(nn.Module):
 def relative_pos_encoding(xyz, neighbor_idx):
     neighbor_xyz = gather_neighbour(xyz, neighbor_idx)
     xyz = xyz[:, :, None, :].permute(0, 3, 1, 2).contiguous()
-    repeated_xyz = xyz.repeat(1, 1, 1, 16)
+    repeated_xyz = xyz.repeat(1, 1, 1, neighbor_xyz.shape[3])
     relative_xyz = repeated_xyz - neighbor_xyz
     relative_dist = torch.sqrt(torch.sum(relative_xyz**2, dim=1, keepdim=True))
     relative_feature = torch.cat([relative_dist, relative_xyz, repeated_xyz, neighbor_xyz], dim=1)
